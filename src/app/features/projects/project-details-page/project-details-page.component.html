@@ -1,93 +1,104 @@
 <div *ngIf="project; else notFound" class="p-4">
-  <h2 class="text-2xl font-bold mb-2">{{ project.name }}</h2>
-  <p class="text-gray-700 mb-1">{{ project.description }}</p>
-  <p class="text-sm text-gray-500">Deadline: {{ project.deadline }}</p>
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <h2 class="text-2xl font-bold">{{ project.name }}</h2>
+      <p class="text-gray-700 mb-1">{{ project.description }}</p>
+      <p class="text-sm text-gray-500">Deadline: {{ project.deadline }}</p>
+      <p class="text-sm text-gray-500">Skapad: {{ project.created_at | date:'short' }}</p>
+      <p class="text-sm text-gray-500">Prioritet: {{ project.priority }}</p>
+      <p class="text-sm text-gray-500">Status: {{ projectProgress }}</p>
+    </div>
+
+    <button
+      (click)="confirmDeleteProject()"
+      class="text-red-600 hover:text-red-800 border border-red-600 px-3 py-1 rounded text-sm"
+    >
+      🗑️ Ta bort projekt
+    </button>
+  </div>
 
   <!-- Lägg till uppgift -->
   <div class="mt-6">
     <h3 class="text-lg font-semibold mb-2">Lägg till uppgift</h3>
     <app-task-form
-      [projectId]="project.id"
+      [project_id]="project.id"
       (submitTask)="onAddTask($event)"
     ></app-task-form>
   </div>
 
-  <!-- Lista av uppgifter -->
-  <div class="mt-8">
-    <h3 class="text-lg font-semibold mb-2">Uppgifter</h3>
-
-    <div class="flex gap-2 mt-4 mb-2 flex-wrap">
-      <button
-        class="px-3 py-1 rounded border text-sm"
-        [class.bg-blue-600]="filter === 'all'"
-        [class.text-white]="filter === 'all'"
-        (click)="filter = 'all'"
-      >
-        Alla
-      </button>
-      <button
-        class="px-3 py-1 rounded border text-sm"
-        [class.bg-blue-600]="filter === 'pending'"
-        [class.text-white]="filter === 'pending'"
-        (click)="filter = 'pending'"
-      >
-        Pending
-      </button>
-      <button
-        class="px-3 py-1 rounded border text-sm"
-        [class.bg-blue-600]="filter === 'in-progress'"
-        [class.text-white]="filter === 'in-progress'"
-        (click)="filter = 'in-progress'"
-      >
-        In Progress
-      </button>
-      <button
-        class="px-3 py-1 rounded border text-sm"
-        [class.bg-blue-600]="filter === 'done'"
-        [class.text-white]="filter === 'done'"
-        (click)="filter = 'done'"
-      >
-        Done
-      </button>
-    </div>
-
-    <ul *ngIf="tasks.length > 0; else noTasks" class="space-y-4">
-      <li *ngFor="let task of filteredTasks" class="border p-3 rounded shadow">
-        <div class="flex justify-between items-center">
-          <h4 class="font-medium">{{ task.title }}</h4>
-          <div class="flex items-center gap-2">
-            <span
-              (click)="cycleTaskStatus(task)"
-              class="text-xs px-2 py-1 rounded cursor-pointer hover:opacity-90"
-              [ngClass]="{
-                'bg-green-200 text-green-800': task.status === 'done',
-                'bg-yellow-200 text-yellow-800': task.status === 'in-progress',
-                'bg-gray-200 text-gray-800': task.status === 'pending'
-              }"
-            >
-              {{ task.status }}
-            </span>
-            <button
-              (click)="deleteTask(task.id)"
-              class="text-red-600 hover:text-red-800 text-sm"
-              title="Ta bort uppgift"
-            >
-              🗑️
-            </button>
-          </div>
-        </div>
-
-        <p class="text-sm text-gray-600">{{ task.description }}</p>
-        <p class="text-xs text-gray-500 mt-1">
-          Prioritet: {{ task.priority }} • Deadline: {{ task.deadline }}
-        </p>
-      </li>
-    </ul>
-
-    <ng-template #noTasks>
-      <p class="text-gray-500">Inga uppgifter i detta projekt.</p>
-    </ng-template>
+  <!-- Filtrering -->
+  <div class="flex gap-2 mt-8 mb-4 flex-wrap">
+    <button
+      class="px-3 py-1 rounded border text-sm"
+      [class.bg-blue-600]="filter === 'all'"
+      [class.text-white]="filter === 'all'"
+      (click)="filter = 'all'"
+    >
+      Alla
+    </button>
+    <button
+      class="px-3 py-1 rounded border text-sm"
+      [class.bg-blue-600]="filter === 'pending'"
+      [class.text-white]="filter === 'pending'"
+      (click)="filter = 'pending'"
+    >
+      Pending
+    </button>
+    <button
+      class="px-3 py-1 rounded border text-sm"
+      [class.bg-blue-600]="filter === 'in_progress'"
+      [class.text-white]="filter === 'in_progress'"
+      (click)="filter = 'in_progress'"
+    >
+      In Progress
+    </button>
+    <button
+      class="px-3 py-1 rounded border text-sm"
+      [class.bg-blue-600]="filter === 'done'"
+      [class.text-white]="filter === 'done'"
+      (click)="filter = 'done'"
+    >
+      Done
+    </button>
   </div>
+
+  <!-- Lista av uppgifter -->
+  <ul *ngIf="filteredTasks.length > 0; else noTasks" class="space-y-4">
+    <li *ngFor="let task of filteredTasks" class="border p-3 rounded shadow">
+      <div class="flex justify-between items-center">
+        <h4 class="font-medium">{{ task.title }}</h4>
+        <div class="flex items-center gap-2">
+          <span
+            (click)="cycleTaskStatus(task)"
+            class="text-xs px-2 py-1 rounded cursor-pointer hover:opacity-90"
+            [ngClass]="{
+              'bg-green-200 text-green-800': task.status === 'done',
+              'bg-yellow-200 text-yellow-800': task.status === 'in_progress',
+              'bg-gray-200 text-gray-800': task.status === 'pending'
+            }"
+          >
+            {{ task.status }}
+          </span>
+          <button
+            (click)="deleteTask(task.id)"
+            class="text-red-600 hover:text-red-800 text-sm"
+            title="Ta bort uppgift"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-600">{{ task.description }}</p>
+      <p class="text-xs text-gray-500 mt-1">
+        Prioritet: {{ task.priority }} • Deadline: {{ task.deadline }}
+      </p>
+    </li>
+  </ul>
+
+  <ng-template #noTasks>
+    <p class="text-gray-500">Inga uppgifter i detta projekt.</p>
+  </ng-template>
 </div>
 
 <ng-template #notFound>

@@ -10,7 +10,7 @@ import { Project } from '../../../models/project.model';
   templateUrl: './project-form.component.html',
 })
 export class ProjectFormComponent {
-  @Output() submitProject = new EventEmitter<Project>();
+  @Output() submitProject = new EventEmitter<Omit<Project, 'id'>>();
 
   form: FormGroup;
 
@@ -19,17 +19,14 @@ export class ProjectFormComponent {
       name: ['', Validators.required],
       description: [''],
       deadline: ['', Validators.required],
+      priority: ['medium', Validators.required], // ny rad
     });
+
   }
 
   submit() {
     if (this.form.valid) {
-      const newProject: Project = {
-        id: Date.now(), // enkel ID-generator
-        tasks: [],
-        ...this.form.value,
-      };
-      this.submitProject.emit(newProject);
+      this.submitProject.emit(this.form.value);
       this.form.reset();
     }
   }

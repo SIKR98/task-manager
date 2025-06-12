@@ -10,13 +10,13 @@ import { Task, TaskPriority, TaskStatus } from '../../../models/task.model';
   templateUrl: './task-form.component.html',
 })
 export class TaskFormComponent {
-  @Input() projectId!: number;
+  @Input() project_id!: number;
   @Output() submitTask = new EventEmitter<Task>();
 
   form: FormGroup;
 
   priorities: TaskPriority[] = ['low', 'medium', 'high'];
-  statuses: TaskStatus[] = ['pending', 'in-progress', 'done'];
+  statuses: TaskStatus[] = ['pending', 'in_progress', 'done'];
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -32,7 +32,8 @@ export class TaskFormComponent {
     if (this.form.valid) {
       const task: Task = {
         id: Date.now(),
-        projectId: this.projectId,
+        created_at: new Date().toISOString(),
+        project_id: this.project_id,
         ...this.form.value,
       };
       this.submitTask.emit(task);

@@ -20,6 +20,19 @@
     </div>
   </div>
 
+  <div>
+    <label class="block font-semibold mb-1">Prioritet *</label>
+    <select formControlName="priority" class="w-full border p-2 rounded">
+      <option value="">Välj prioritet</option>
+      <option value="low">Låg</option>
+      <option value="medium">Medel</option>
+      <option value="high">Hög</option>
+    </select>
+    <div *ngIf="form.get('priority')?.invalid && form.get('priority')?.touched" class="text-red-500 text-sm">
+      Prioritet krävs.
+    </div>
+  </div>
+
   <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" [disabled]="form.invalid">
     Skapa projekt
   </button>

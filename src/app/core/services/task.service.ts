@@ -1,59 +1,84 @@
 import { Injectable, signal } from '@angular/core';
-import { Task } from '../../models/task.model';
+import { Task, TaskPriority, TaskStatus } from '../../models/task.model';
+import { supabase } from '../../../supabase';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
-  private _tasks = signal<Task[]>([
-    {
-      id: 1,
-      projectId: 1,
-      title: 'Skapa layout',
-      description: 'Skapa grundlayout för portfolion',
-      status: 'in-progress',
-      priority: 'high',
-      deadline: '2025-06-15',
-    },
-    {
-      id: 2,
-      projectId: 1,
-      title: 'Skriv om mig-sida',
-      description: '',
-      status: 'pending',
-      priority: 'medium',
-      deadline: '2025-06-20',
-    },
-    {
-      id: 3,
-      projectId: 2,
-      title: 'Fixa Git-repo',
-      description: '',
-      status: 'done',
-      priority: 'low',
-      deadline: '2025-06-10',
-    },
-  ]);
+  private _tasks = signal<Task[]>([]);
 
   get tasks() {
     return this._tasks.asReadonly();
   }
 
-  getTasksForProject(projectId: number) {
-    return this._tasks().filter((task) => task.projectId === projectId);
+  constructor() {}
+
+  async getTasksForProject(project_id: number): Promise<Task[]> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('project_id', project_id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Kunde inte hämta tasks:', error);
+      return [];
+    }
+
+    this._tasks.set(data as Task[]);
+    return data as Task[];
   }
 
-  addTask(task: Task) {
-    this._tasks.update((list) => [...list, task]);
+  async addTask(task: Omit<Task, 'id' | 'created_at'>) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert(task)
+      .select();
+
+    if (error) {
+      console.error('Kunde inte lägga till task:', error);
+      return;
+    }
+
+    const newTask = data?.[0];
+    if (newTask) {
+      this._tasks.update((current) => [newTask, ...current]);
+    }
   }
 
-  updateTask(updated: Task) {
-    this._tasks.update((list) =>
-      list.map((t) => (t.id === updated.id ? updated : t))
+  async updateTask(updated: Task) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        title: updated.title,
+        description: updated.description,
+        priority: updated.priority,
+        status: updated.status,
+        deadline: updated.deadline,
+      })
+      .eq('id', updated.id)
+      .select();
+
+    if (error) {
+      console.error('Kunde inte uppdatera task:', error);
+      return;
+    }
+
+    const task = data?.[0];
+    this._tasks.update((tasks) =>
+      tasks.map((t) => (t.id === task.id ? task : t))
     );
   }
 
-  deleteTask(id: number) {
-    this._tasks.update((list) => list.filter((t) => t.id !== id));
+  async deleteTask(taskId: number) {
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+
+    if (error) {
+      console.error('Kunde inte ta bort task:', error);
+      return;
+    }
+
+    this._tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
   }
 }

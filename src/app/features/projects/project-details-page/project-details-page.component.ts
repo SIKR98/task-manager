@@ -50,4 +50,22 @@ export class ProjectDetailsPageComponent {
     this.taskService.updateTask(updatedTask);
     this.tasks = this.taskService.getTasksForProject(task.projectId);
   }
+
+  deleteTask(taskId: number) {
+    this.taskService.deleteTask(taskId);
+    if (this.project) {
+      this.tasks = this.taskService.getTasksForProject(this.project.id);
+    }
+  }
+
+  filter: 'all' | 'pending' | 'in-progress' | 'done' = 'all';
+
+  get filteredTasks(): Task[] {
+    if (this.filter === 'all') return this.tasks;
+    return this.tasks.filter(t => t.status === this.filter);
+  }
+
+
+
+
 }

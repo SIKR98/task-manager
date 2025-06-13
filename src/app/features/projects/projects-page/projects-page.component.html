@@ -62,7 +62,8 @@
   <ul class="space-y-4 mt-6">
     <li
       *ngFor="let project of filteredProjects()"
-      class="border p-4 rounded shadow hover:bg-gray-100 transition"
+      class="border p-4 rounded shadow transition"
+      [appHoverHighlight]="'#f3f4f6'"
     >
       <a [routerLink]="['/projects', project.id]" class="block mb-2">
         <div class="flex justify-between items-start">
@@ -72,7 +73,8 @@
 
             <div class="text-sm text-gray-600 mt-1">
               <p>Deadline: {{ project.deadline }}</p>
-              <p>Skapad: {{ project.created_at | date: 'shortDate' }}</p>
+              <p>Deadline status: {{ project.deadline | deadlineStatus }}</p>
+              <p>Skapad: {{ project.created_at | date: 'yyyy-MM-dd' }}</p>
               <p>Prioritet: {{ project.priority }}</p>
               <p>Status: {{ project.progress }}%</p>
             </div>

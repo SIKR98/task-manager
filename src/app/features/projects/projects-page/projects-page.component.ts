@@ -6,6 +6,8 @@ import { ProjectService } from '../../../core/services/project.service';
 import { TaskService } from '../../../core/services/task.service';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 import { Task } from '../../../models/task.model';
+import { DeadlineStatusPipe } from '../../../shared/pipes/deadline-status.pipe'; // ✅ Pipe
+import { HoverHighlightDirective } from '../../../shared/directives/hover-highlight.directive'; // ✅ Direktivet
 
 type ExtendedProject = Project & {
   progress: number;
@@ -15,7 +17,13 @@ type ExtendedProject = Project & {
 @Component({
   selector: 'app-projects-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProjectFormComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ProjectFormComponent,
+    DeadlineStatusPipe,         // ✅ Gör pipen tillgänglig
+    HoverHighlightDirective     // ✅ Gör direktivet tillgängligt
+  ],
   templateUrl: './projects-page.component.html',
 })
 export class ProjectsPageComponent {
@@ -91,7 +99,6 @@ export class ProjectsPageComponent {
 
   async confirmDeleteProject(project: Project) {
     const confirmed = confirm(`Vill du verkligen ta bort projektet "${project.name}"?`);
-
     if (!confirmed) return;
 
     const tasksToDelete = this.tasks().filter((t) => t.project_id === project.id);

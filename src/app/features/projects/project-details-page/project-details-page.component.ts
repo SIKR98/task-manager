@@ -6,13 +6,15 @@ import { TaskService } from '../../../core/services/task.service';
 import { Project } from '../../../models/project.model';
 import { Task, TaskStatus } from '../../../models/task.model';
 import { TaskFormComponent } from '../../tasks/task-form/task-form.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-project-details-page',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent],
+  imports: [CommonModule, TaskFormComponent, RouterModule],
   templateUrl: './project-details-page.component.html',
 })
+
 export class ProjectDetailsPageComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -23,7 +25,7 @@ export class ProjectDetailsPageComponent {
   tasks: Task[] = [];
   filter: 'all' | TaskStatus = 'all';
   editMode = false;
-  editTask: Task | undefined = undefined; // ⬅️ changed from null to undefined
+  editTask: Task | undefined = undefined;
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));

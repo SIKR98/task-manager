@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Task, TaskPriority, TaskStatus } from '../../models/task.model';
+import { Task } from '../../models/task.model';
 import { supabase } from '../../../supabase';
 
 @Injectable({
@@ -28,6 +28,26 @@ export class TaskService {
 
     this._tasks.set(data as Task[]);
     return data as Task[];
+  }
+
+  async loadTasks(project_id: number): Promise<void> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('project_id', project_id);
+
+    if (error) {
+      console.error('Kunde inte ladda tasks för projekt:', error);
+      return;
+    }
+
+    const loadedTasks = data as Task[];
+
+    // Uppdatera signalen genom att ersätta bara tasks för aktuellt projekt
+    this._tasks.update((current) => {
+      const otherTasks = current.filter((t) => t.project_id !== project_id);
+      return [...otherTasks, ...loadedTasks];
+    });
   }
 
   async addTask(task: Omit<Task, 'id' | 'created_at'>) {

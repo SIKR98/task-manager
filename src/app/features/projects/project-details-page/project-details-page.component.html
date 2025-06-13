@@ -1,28 +1,63 @@
 <div *ngIf="project; else notFound" class="p-4">
-  <div class="flex justify-between items-center mb-4">
+  <div class="flex justify-between items-start mb-4">
     <div>
       <h2 class="text-2xl font-bold">{{ project.name }}</h2>
       <p class="text-gray-700 mb-1">{{ project.description }}</p>
       <p class="text-sm text-gray-500">Deadline: {{ project.deadline }}</p>
       <p class="text-sm text-gray-500">Skapad: {{ project.created_at | date:'short' }}</p>
       <p class="text-sm text-gray-500">Prioritet: {{ project.priority }}</p>
-      <p class="text-sm text-gray-500">Status: {{ projectProgress }}</p>
+
+      <div class="mt-1">
+        <span class="text-sm font-semibold">
+          Status:
+          <span
+            [ngClass]="{
+              'text-green-600': status === 'done',
+              'text-yellow-600': status === 'in_progress',
+              'text-gray-600': status === 'pending'
+            }"
+          >
+            {{ status }}
+          </span>
+        </span>
+      </div>
+
+      <div *ngIf="isDelayed" class="text-sm text-red-600 font-semibold mt-1">
+        ⏰ Försenad
+      </div>
+
+      <div class="text-sm text-blue-600 mt-1">
+        Klar: {{ projectProgress }}
+      </div>
     </div>
 
-    <button
-      (click)="confirmDeleteProject()"
-      class="text-red-600 hover:text-red-800 border border-red-600 px-3 py-1 rounded text-sm"
-    >
-      🗑️ Ta bort projekt
-    </button>
+    <div class="flex flex-col gap-2 items-end">
+      <button
+        (click)="enableEdit()"
+        class="text-blue-600 hover:text-blue-800 border border-blue-600 px-3 py-1 rounded text-sm"
+      >
+        ✏️ Redigera projekt
+      </button>
+      <button
+        (click)="confirmDeleteProject()"
+        class="text-red-600 hover:text-red-800 border border-red-600 px-3 py-1 rounded text-sm"
+      >
+        🗑️ Ta bort projekt
+      </button>
+    </div>
   </div>
 
-  <!-- Lägg till uppgift -->
+  <!-- Uppgiftsformulär -->
   <div class="mt-6">
-    <h3 class="text-lg font-semibold mb-2">Lägg till uppgift</h3>
+    <h3 class="text-lg font-semibold mb-2">
+      {{ editTask ? 'Redigera uppgift' : 'Lägg till uppgift' }}
+    </h3>
+
     <app-task-form
       [project_id]="project.id"
-      (submitTask)="onAddTask($event)"
+      [editTask]="editTask ?? undefined"
+      (submitTask)="onSubmitTask($event)"
+      (cancelEdit)="cancelEditTask()"
     ></app-task-form>
   </div>
 
@@ -66,7 +101,14 @@
   <ul *ngIf="filteredTasks.length > 0; else noTasks" class="space-y-4">
     <li *ngFor="let task of filteredTasks" class="border p-3 rounded shadow">
       <div class="flex justify-between items-center">
-        <h4 class="font-medium">{{ task.title }}</h4>
+        <div>
+          <h4 class="font-medium">{{ task.title }}</h4>
+          <p class="text-sm text-gray-600">{{ task.description }}</p>
+          <p class="text-xs text-gray-500 mt-1">
+            Prioritet: {{ task.priority }} • Deadline: {{ task.deadline }}
+          </p>
+        </div>
+
         <div class="flex items-center gap-2">
           <span
             (click)="cycleTaskStatus(task)"
@@ -80,6 +122,13 @@
             {{ task.status }}
           </span>
           <button
+            (click)="startEditTask(task)"
+            class="text-blue-600 hover:text-blue-800 text-sm"
+            title="Redigera uppgift"
+          >
+            ✏️
+          </button>
+          <button
             (click)="deleteTask(task.id)"
             class="text-red-600 hover:text-red-800 text-sm"
             title="Ta bort uppgift"
@@ -88,11 +137,6 @@
           </button>
         </div>
       </div>
-
-      <p class="text-sm text-gray-600">{{ task.description }}</p>
-      <p class="text-xs text-gray-500 mt-1">
-        Prioritet: {{ task.priority }} • Deadline: {{ task.deadline }}
-      </p>
     </li>
   </ul>
 

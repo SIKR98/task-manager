@@ -22,6 +22,8 @@ export class ProjectDetailsPageComponent {
   project?: Project;
   tasks: Task[] = [];
   filter: 'all' | TaskStatus = 'all';
+  editMode = false;
+  editTask: Task | undefined = undefined; // ⬅️ changed from null to undefined
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -31,18 +33,36 @@ export class ProjectDetailsPageComponent {
 
   async loadProject(id: number) {
     this.project = await this.projectService.getProjectById(id);
+
+    if (!this.project) {
+      this.project = await this.projectService.getProjectByIdFromSupabase(id);
+    }
   }
 
   async loadTasks(project_id: number) {
     this.tasks = await this.taskService.getTasksForProject(project_id);
   }
 
-  async onAddTask(task: Task) {
-    await this.taskService.addTask({
-      ...task,
-      project_id: task.project_id,
-    });
+  async onSubmitTask(task: Task) {
+    if (this.editTask) {
+      await this.taskService.updateTask(task);
+    } else {
+      await this.taskService.addTask({
+        ...task,
+        project_id: this.project?.id ?? task.project_id,
+      });
+    }
+
+    this.editTask = undefined;
     await this.loadTasks(task.project_id);
+  }
+
+  startEditTask(task: Task) {
+    this.editTask = { ...task };
+  }
+
+  cancelEditTask() {
+    this.editTask = undefined;
   }
 
   async cycleTaskStatus(task: Task) {
@@ -71,11 +91,34 @@ export class ProjectDetailsPageComponent {
   async confirmDeleteProject() {
     if (!this.project) return;
 
-    const confirmed = confirm(`Vill du verkligen ta bort projektet "${this.project.name}"?`);
+    const confirmed = confirm(`Vill du verkligen ta bort projektet "${this.project.name}"? Alla uppgifter tas också bort.`);
     if (confirmed) {
+      const taskDeletions = this.tasks.map((t) => this.taskService.deleteTask(t.id));
+      await Promise.all(taskDeletions);
       await this.projectService.deleteProject(this.project.id);
       this.router.navigate(['/projects']);
     }
+  }
+
+  enableEdit() {
+    this.editMode = true;
+  }
+
+  async saveProjectChanges(updated: Partial<Project>) {
+    if (!this.project) return;
+
+    const updatedProject: Project = {
+      ...this.project,
+      ...updated,
+    };
+
+    await this.projectService.updateProject(updatedProject); // ✅ now correct
+    await this.loadProject(updatedProject.id);
+    this.editMode = false;
+  }
+
+  cancelEdit() {
+    this.editMode = false;
   }
 
   get filteredTasks(): Task[] {
@@ -87,5 +130,21 @@ export class ProjectDetailsPageComponent {
     if (this.tasks.length === 0) return 'Inga uppgifter';
     const doneCount = this.tasks.filter((t) => t.status === 'done').length;
     return `${Math.round((doneCount / this.tasks.length) * 100)}%`;
+  }
+
+  get isDelayed(): boolean {
+    if (!this.project) return false;
+    const deadlinePassed = new Date(this.project.deadline) < new Date();
+    const allDone = this.tasks.every((t) => t.status === 'done');
+    return deadlinePassed && !allDone;
+  }
+
+  get status(): 'pending' | 'in_progress' | 'done' {
+    if (this.tasks.length === 0) return 'pending';
+    const allDone = this.tasks.every((t) => t.status === 'done');
+    const anyInProgress = this.tasks.some((t) => t.status === 'in_progress');
+    if (allDone) return 'done';
+    if (anyInProgress) return 'in_progress';
+    return 'pending';
   }
 }

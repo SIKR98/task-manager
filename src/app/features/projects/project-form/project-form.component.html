@@ -33,7 +33,22 @@
     </div>
   </div>
 
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" [disabled]="form.invalid">
-    Skapa projekt
-  </button>
+  <div class="flex gap-4">
+    <button
+      type="submit"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      [disabled]="form.invalid"
+    >
+      {{ project ? 'Spara ändringar' : 'Skapa projekt' }}
+    </button>
+
+    <button
+      *ngIf="project"
+      type="button"
+      (click)="cancelEdit()"
+      class="border border-gray-400 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
+    >
+      Avbryt
+    </button>
+  </div>
 </form>

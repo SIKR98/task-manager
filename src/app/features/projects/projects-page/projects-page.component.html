@@ -1,15 +1,106 @@
 <h2 class="text-2xl font-bold mb-6">Mina projekt</h2>
 
-<app-project-form (submitProject)="onAddProject($event)"></app-project-form>
+<!-- Nytt projekt eller redigera -->
+<app-project-form
+  *ngIf="!editingProject"
+  (submitProject)="onAddProject($event)"
+></app-project-form>
 
-<div *ngIf="projects().length > 0; else noProjects">
+<app-project-form
+  *ngIf="editingProject"
+  [project]="editingProject"
+  (submitProject)="onUpdateProject($event)"
+  (cancel)="onCancelEdit()"
+></app-project-form>
+
+<!-- Filtreringsknappar -->
+<div class="flex gap-2 mt-8 mb-4 flex-wrap">
+  <button
+    class="px-3 py-1 rounded border text-sm"
+    [class.bg-blue-600]="filter === 'all'"
+    [class.text-white]="filter === 'all'"
+    (click)="filter = 'all'"
+  >
+    Alla
+  </button>
+  <button
+    class="px-3 py-1 rounded border text-sm"
+    [class.bg-blue-600]="filter === 'pending'"
+    [class.text-white]="filter === 'pending'"
+    (click)="filter = 'pending'"
+  >
+    Pending
+  </button>
+  <button
+    class="px-3 py-1 rounded border text-sm"
+    [class.bg-blue-600]="filter === 'in_progress'"
+    [class.text-white]="filter === 'in_progress'"
+    (click)="filter = 'in_progress'"
+  >
+    In Progress
+  </button>
+  <button
+    class="px-3 py-1 rounded border text-sm"
+    [class.bg-blue-600]="filter === 'done'"
+    [class.text-white]="filter === 'done'"
+    (click)="filter = 'done'"
+  >
+    Done
+  </button>
+  <button
+    class="px-3 py-1 rounded border text-sm text-red-700 border-red-600"
+    [class.bg-red-600]="filter === 'delayed'"
+    [class.text-white]="filter === 'delayed'"
+    (click)="filter = 'delayed'"
+  >
+    Delayed
+  </button>
+</div>
+
+<!-- Lista av projekt -->
+<div *ngIf="filteredProjects().length > 0; else noProjects">
   <ul class="space-y-4 mt-6">
-    <li *ngFor="let project of projects()" class="border p-4 rounded shadow hover:bg-gray-100 transition">
-      <a [routerLink]="['/projects', project.id]" class="block">
-        <h3 class="text-lg font-semibold">{{ project.name }}</h3>
-        <p class="text-gray-700">{{ project.description }}</p>
-        <p class="text-sm text-gray-500">Deadline: {{ project.deadline }}</p>
+    <li
+      *ngFor="let project of filteredProjects()"
+      class="border p-4 rounded shadow hover:bg-gray-100 transition"
+    >
+      <a [routerLink]="['/projects', project.id]" class="block mb-2">
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-lg font-semibold">{{ project.name }}</h3>
+            <p class="text-gray-700">{{ project.description }}</p>
+
+            <div class="text-sm text-gray-600 mt-1">
+              <p>Deadline: {{ project.deadline }}</p>
+              <p>Skapad: {{ project.created_at | date: 'shortDate' }}</p>
+              <p>Prioritet: {{ project.priority }}</p>
+              <p>Status: {{ project.progress }}%</p>
+            </div>
+          </div>
+
+          <div *ngIf="project.delayed && project.progress < 100">
+            <span class="text-xs text-white bg-red-600 px-2 py-1 rounded">
+              ⏰ Delayed
+            </span>
+          </div>
+        </div>
       </a>
+
+      <!-- Åtgärdsknappar -->
+      <div class="flex gap-2 mt-2">
+        <button
+          (click)="editProject(project)"
+          class="text-blue-600 hover:underline text-sm"
+        >
+          ✏️ Redigera
+        </button>
+        <button
+          (click)="confirmDeleteProject(project)"
+          class="text-red-600 hover:underline text-sm"
+        >
+          🗑️ Ta bort
+        </button>
+      </div>
     </li>
   </ul>
 </div>

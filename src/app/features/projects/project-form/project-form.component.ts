@@ -1,6 +1,18 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Project } from '../../../models/project.model';
 
 @Component({
@@ -9,8 +21,10 @@ import { Project } from '../../../models/project.model';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './project-form.component.html',
 })
-export class ProjectFormComponent {
-  @Output() submitProject = new EventEmitter<Omit<Project, 'id'>>();
+export class ProjectFormComponent implements OnChanges {
+  @Input() project?: Project;
+  @Output() submitProject = new EventEmitter<Project>();
+  @Output() cancel = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -19,15 +33,38 @@ export class ProjectFormComponent {
       name: ['', Validators.required],
       description: [''],
       deadline: ['', Validators.required],
-      priority: ['medium', Validators.required], // ny rad
+      priority: ['medium', Validators.required],
     });
+  }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['project'] && this.project) {
+      this.form.patchValue({
+        name: this.project.name,
+        description: this.project.description,
+        deadline: this.project.deadline,
+        priority: this.project.priority,
+      });
+    }
   }
 
   submit() {
     if (this.form.valid) {
-      this.submitProject.emit(this.form.value);
-      this.form.reset();
+      const project: Project = {
+        ...(this.project ?? {
+          id: Date.now(),
+          created_at: new Date().toISOString(),
+        }),
+        ...this.form.value,
+      };
+
+      this.submitProject.emit(project);
+      this.form.reset({ priority: 'medium' });
     }
+  }
+
+  cancelEdit() {
+    this.form.reset({ priority: 'medium' });
+    this.cancel.emit();
   }
 }

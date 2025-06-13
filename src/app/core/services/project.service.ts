@@ -34,6 +34,21 @@ export class ProjectService {
     return this._projects().find((p) => p.id === id);
   }
 
+  async getProjectByIdFromSupabase(id: number): Promise<Project | undefined> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Kunde inte hämta projekt från Supabase:', error);
+      return;
+    }
+
+    return data as Project;
+  }
+
   async addProject(project: Omit<Project, 'id'>) {
     const payload = {
       name: project.name,
@@ -56,16 +71,39 @@ export class ProjectService {
     this._projects.update((projects) => [newProject, ...projects]);
   }
 
-  async deleteProject(projectId: number) {
-  const { error } = await supabase.from('projects').delete().eq('id', projectId);
+  async updateProject(updatedProject: Project) {
+    const { id, ...updatedFields } = updatedProject;
 
-  if (error) {
-    console.error('Kunde inte ta bort projekt:', error);
-    return;
+    const { data, error } = await supabase
+      .from('projects')
+      .update(updatedFields)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Kunde inte uppdatera projekt:', error);
+      return;
+    }
+
+    const updated = data?.[0];
+    this._projects.update((projects) =>
+      projects.map((p) => (p.id === id ? updated : p))
+    );
   }
 
-  // Uppdatera local state om du använder signal
-  this._projects.update((projects) => projects.filter((p) => p.id !== projectId));
-}
+  async deleteProject(projectId: number) {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
 
+    if (error) {
+      console.error('Kunde inte ta bort projekt:', error);
+      return;
+    }
+
+    this._projects.update((projects) =>
+      projects.filter((p) => p.id !== projectId)
+    );
+  }
 }

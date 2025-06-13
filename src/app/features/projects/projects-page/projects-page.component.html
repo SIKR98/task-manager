@@ -26,41 +26,41 @@
 <div class="flex gap-2 mt-4 mb-4 flex-wrap">
   <button
     class="px-3 py-1 rounded border text-sm"
-    [class.bg-blue-600]="filter === 'all'"
-    [class.text-white]="filter === 'all'"
-    (click)="filter = 'all'"
+    [class.bg-blue-600]="filter() === 'all'"
+    [class.text-white]="filter() === 'all'"
+    (click)="filter.set('all')"
   >
     Alla
   </button>
   <button
     class="px-3 py-1 rounded border text-sm"
-    [class.bg-blue-600]="filter === 'pending'"
-    [class.text-white]="filter === 'pending'"
-    (click)="filter = 'pending'"
+    [class.bg-blue-600]="filter() === 'pending'"
+    [class.text-white]="filter() === 'pending'"
+    (click)="filter.set('pending')"
   >
     Pending
   </button>
   <button
     class="px-3 py-1 rounded border text-sm"
-    [class.bg-blue-600]="filter === 'in_progress'"
-    [class.text-white]="filter === 'in_progress'"
-    (click)="filter = 'in_progress'"
+    [class.bg-blue-600]="filter() === 'in_progress'"
+    [class.text-white]="filter() === 'in_progress'"
+    (click)="filter.set('in_progress')"
   >
     In Progress
   </button>
   <button
     class="px-3 py-1 rounded border text-sm"
-    [class.bg-blue-600]="filter === 'done'"
-    [class.text-white]="filter === 'done'"
-    (click)="filter = 'done'"
+    [class.bg-blue-600]="filter() === 'done'"
+    [class.text-white]="filter() === 'done'"
+    (click)="filter.set('done')"
   >
     Done
   </button>
   <button
     class="px-3 py-1 rounded border text-sm text-red-700 border-red-600"
-    [class.bg-red-600]="filter === 'delayed'"
-    [class.text-white]="filter === 'delayed'"
-    (click)="filter = 'delayed'"
+    [class.bg-red-600]="filter() === 'delayed'"
+    [class.text-white]="filter() === 'delayed'"
+    (click)="filter.set('delayed')"
   >
     Delayed
   </button>

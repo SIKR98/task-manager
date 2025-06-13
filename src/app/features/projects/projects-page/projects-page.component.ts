@@ -1,14 +1,14 @@
 import { Component, Signal, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Project } from '../../../models/project.model';
+import { Task } from '../../../models/task.model';
 import { ProjectService } from '../../../core/services/project.service';
 import { TaskService } from '../../../core/services/task.service';
 import { ProjectFormComponent } from '../project-form/project-form.component';
-import { Task } from '../../../models/task.model';
 import { DeadlineStatusPipe } from '../../../shared/pipes/deadline-status.pipe';
 import { HoverHighlightDirective } from '../../../shared/directives/hover-highlight.directive';
-import { FormsModule } from '@angular/forms';
 
 type ExtendedProject = Project & {
   progress: number;
@@ -32,11 +32,11 @@ export class ProjectsPageComponent {
   projects!: Signal<Project[]>;
   tasks!: Signal<Task[]>;
 
-  filter: 'all' | 'pending' | 'in_progress' | 'done' | 'delayed' = 'all';
-  searchTerm = signal(''); // ✅ Sökterm signal
+  filter = signal<'all' | 'pending' | 'in_progress' | 'done' | 'delayed'>('all');
+  searchTerm = signal('');
   editingProject: Project | null = null;
 
-  filteredProjects!: Signal<ExtendedProject[]>;
+  filteredProjects: Signal<ExtendedProject[]>;
 
   constructor(
     private projectService: ProjectService,
@@ -48,7 +48,8 @@ export class ProjectsPageComponent {
     this.filteredProjects = computed(() => {
       const allProjects = this.projects();
       const taskList = this.tasks();
-      const term = this.searchTerm().toLowerCase();
+      const search = this.searchTerm().toLowerCase();
+      const statusFilter = this.filter();
 
       return allProjects
         .map((project) => {
@@ -68,24 +69,24 @@ export class ProjectsPageComponent {
           };
         })
         .filter((project) => {
-          const matchesSearch = project.name.toLowerCase().includes(term);
+          const matchesSearch = project.name.toLowerCase().includes(search);
 
-          if (!matchesSearch) return false;
+          const matchesStatus =
+            statusFilter === 'all' ||
+            (statusFilter === 'delayed' && project.delayed) ||
+            (statusFilter === 'done' && project.progress === 100) ||
+            (statusFilter === 'pending' && project.progress === 0) ||
+            (statusFilter === 'in_progress' &&
+              project.progress > 0 &&
+              project.progress < 100 &&
+              !project.delayed);
 
-          switch (this.filter) {
-            case 'done':
-              return project.progress === 100;
-            case 'pending':
-              return project.progress === 0;
-            case 'in_progress':
-              return project.progress > 0 && project.progress < 100;
-            case 'delayed':
-              return project.delayed;
-            default:
-              return true;
-          }
+          return matchesSearch && matchesStatus;
         })
-        .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+        );
     });
 
     effect(() => {

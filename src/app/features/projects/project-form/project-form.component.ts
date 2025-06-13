@@ -50,11 +50,11 @@ export class ProjectFormComponent implements OnChanges {
 
   submit() {
     if (this.form.valid) {
+      const isEditing = !!this.project;
+
       const project: Project = {
-        ...(this.project ?? {
-          id: Date.now(),
-          created_at: new Date().toISOString(),
-        }),
+        id: isEditing ? this.project!.id : Date.now(),
+        created_at: isEditing ? this.project!.created_at : new Date().toISOString(),
         ...this.form.value,
       };
 

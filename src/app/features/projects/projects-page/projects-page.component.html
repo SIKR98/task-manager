@@ -13,8 +13,17 @@
   (cancel)="onCancelEdit()"
 ></app-project-form>
 
+<!-- Sökfält -->
+<input
+  type="text"
+  placeholder="Sök projekt..."
+  class="border p-2 rounded w-full max-w-sm mb-4"
+  [ngModel]="searchTerm()"
+  (ngModelChange)="searchTerm.set($event)"
+>
+
 <!-- Filtreringsknappar -->
-<div class="flex gap-2 mt-8 mb-4 flex-wrap">
+<div class="flex gap-2 mt-4 mb-4 flex-wrap">
   <button
     class="px-3 py-1 rounded border text-sm"
     [class.bg-blue-600]="filter === 'all'"

@@ -1,59 +1,99 @@
-# TaskManager
+Task Manager – Angular + Supabase
+Ett skolprojekt för att hantera projekt och uppgifter – med stöd för prioritet, deadlines och status. Applikationen är byggd i Angular och använder Supabase som backend.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.9.
+Installation
+Klona projektet
+git clone https://github.com/SIKR98/task-manager.git
+cd task-manager
 
-## Development server
+Installera beroenden
+npm install
 
-To start a local development server, run:
-
-```bash
+Starta utvecklingsservern
 ng serve
-```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Öppna i webbläsaren:
+http://localhost:4200
 
-## Code scaffolding
+Funktioner
+Skapa, uppdatera och ta bort projekt
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Lägg till uppgifter kopplade till projekt
 
-```bash
-ng generate component component-name
-```
+Hantera deadlines, prioritet och status
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Formulär med validering
 
-```bash
-ng generate --help
-```
+Supabase används som databas
 
-## Building
+Enhetstester med Jasmine och Karma
 
-To build the project run:
+Teknisk dokumentation
+Projektet använder standalone-komponenter i Angular. All formulärlogik bygger på Reactive Forms. Supabase används som backend-tjänst (PostgreSQL). Signals används för att hantera state i klienten.
 
-```bash
-ng build
-```
+Filstruktur:
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+components/ innehåller formulär för projekt och uppgifter
 
-## Running unit tests
+pages/ innehåller vyer
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+core/services/ innehåller datatjänster
 
-```bash
+models/ innehåller typer och interfaces
+
+Teknologier:
+
+Angular 17
+
+Supabase
+
+TypeScript
+
+Reactive Forms
+
+Angular Signals
+
+Jasmine & Karma
+
+API – Supabase
+Appen använder Supabase direkt för att lagra och hämta data.
+
+Hämta alla projekt: supabase.from('projects').select('*')
+
+Lägg till projekt: supabase.from('projects').insert(...)
+
+Uppdatera projekt: supabase.from('projects').update(...)
+
+Ta bort projekt: supabase.from('projects').delete()
+
+Samma gäller för tasks, som inkluderar fält som title, status, priority, deadline, project_id.
+
+Reflektioner
+Jag valde att använda standalone-komponenter för att slippa hålla på med moduler. Reactive Forms gjorde det lättare att validera användarens input. Supabase gjorde det möjligt att bygga en fullstack-liknande app utan att skriva egen backend. Det svåraste var att mocka Supabase korrekt i tester och att få ActivatedRoute att fungera i testsammanhang. Det var också en utmaning att använda Angular Signals då dokumentationen fortfarande är ny.
+
+Testning
+Kör tester med kommandot:
 ng test
-```
 
-## Running end-to-end tests
+Det finns tester för komponenter som project-form och task-form, samt tjänsten ProjectService och huvudkomponenten AppComponent.
 
-For end-to-end (e2e) testing, run:
+Skärmdumpar
+Skärmdumpar finns i mappen screenshots/.
 
-```bash
-ng e2e
-```
+Startsida: lista projekt
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Skapa projekt-formulär
 
-## Additional Resources
+Uppgifter i projekt
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Innehåll i repository
+src/app/ – all applikationskod
+
+screenshots/ – skärmdumpar för dokumentation
+
+README.md – denna fil
+
+*.spec.ts – tester för komponenter och tjänster
+
+Licens
+MIT – använd fritt i utbildningssyfte.

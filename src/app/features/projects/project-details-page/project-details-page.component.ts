@@ -1,20 +1,19 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../../core/services/project.service';
 import { TaskService } from '../../../core/services/task.service';
 import { Project } from '../../../models/project.model';
 import { Task, TaskStatus } from '../../../models/task.model';
 import { TaskFormComponent } from '../../tasks/task-form/task-form.component';
-import { RouterModule } from '@angular/router';
+import { DeleteModalComponent } from '../../../shared/components/delete-modal/delete-modal.component'; // ✅ Modal
 
 @Component({
   selector: 'app-project-details-page',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent, RouterModule],
+  imports: [CommonModule, TaskFormComponent, RouterModule, DeleteModalComponent],
   templateUrl: './project-details-page.component.html',
 })
-
 export class ProjectDetailsPageComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -26,6 +25,12 @@ export class ProjectDetailsPageComponent {
   filter: 'all' | TaskStatus = 'all';
   editMode = false;
   editTask: Task | undefined = undefined;
+
+  // ✅ Modal state
+  showModal = signal(false);
+  modalTitle = signal('');
+  modalMessage = signal('');
+  modalConfirmAction = signal<() => void>(() => {});
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -83,23 +88,42 @@ export class ProjectDetailsPageComponent {
     await this.loadTasks(task.project_id);
   }
 
-  async deleteTask(taskId: number) {
-    await this.taskService.deleteTask(taskId);
-    if (this.project) {
-      await this.loadTasks(this.project.id);
-    }
+  // ✅ Modal for single task
+  openDeleteTaskModal(taskId: number) {
+    this.modalTitle.set('Ta bort uppgift');
+    this.modalMessage.set('Vill du verkligen ta bort denna uppgift?');
+    this.modalConfirmAction.set(async () => {
+      await this.taskService.deleteTask(taskId);
+      if (this.project) {
+        await this.loadTasks(this.project.id);
+      }
+      this.closeModal();
+    });
+    this.showModal.set(true);
   }
 
-  async confirmDeleteProject() {
+  // ✅ Modal for whole project
+  openDeleteProjectModal() {
     if (!this.project) return;
 
-    const confirmed = confirm(`Vill du verkligen ta bort projektet "${this.project.name}"? Alla uppgifter tas också bort.`);
-    if (confirmed) {
+    this.modalTitle.set('Ta bort projekt');
+    this.modalMessage.set(`Vill du verkligen ta bort projektet "${this.project.name}"? Alla uppgifter tas också bort.`);
+    this.modalConfirmAction.set(async () => {
       const taskDeletions = this.tasks.map((t) => this.taskService.deleteTask(t.id));
       await Promise.all(taskDeletions);
-      await this.projectService.deleteProject(this.project.id);
+      await this.projectService.deleteProject(this.project!.id);
+      this.closeModal();
       this.router.navigate(['/projects']);
-    }
+    });
+    this.showModal.set(true);
+  }
+
+  closeModal() {
+    this.showModal.set(false);
+  }
+
+  confirmDelete() {
+    this.modalConfirmAction()();
   }
 
   enableEdit() {
@@ -114,7 +138,7 @@ export class ProjectDetailsPageComponent {
       ...updated,
     };
 
-    await this.projectService.updateProject(updatedProject); // ✅ now correct
+    await this.projectService.updateProject(updatedProject);
     await this.loadProject(updatedProject.id);
     this.editMode = false;
   }

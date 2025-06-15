@@ -9,6 +9,7 @@ import { TaskService } from '../../../core/services/task.service';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 import { DeadlineStatusPipe } from '../../../shared/pipes/deadline-status.pipe';
 import { HoverHighlightDirective } from '../../../shared/directives/hover-highlight.directive';
+import { DeleteModalComponent } from '../../../shared/components/delete-modal/delete-modal.component';
 
 type ExtendedProject = Project & {
   progress: number;
@@ -25,6 +26,7 @@ type ExtendedProject = Project & {
     ProjectFormComponent,
     DeadlineStatusPipe,
     HoverHighlightDirective,
+    DeleteModalComponent
   ],
   templateUrl: './projects-page.component.html',
 })
@@ -35,6 +37,9 @@ export class ProjectsPageComponent {
   filter = signal<'all' | 'pending' | 'in_progress' | 'done' | 'delayed'>('all');
   searchTerm = signal('');
   editingProject: Project | null = null;
+
+  showModal = signal(false); // ✅ kontroll för att visa modal
+  projectToDelete: Project | null = null; // ✅ sparar vilket projekt som ska tas bort
 
   filteredProjects: Signal<ExtendedProject[]>;
 
@@ -112,9 +117,16 @@ export class ProjectsPageComponent {
     this.editingProject = { ...project };
   }
 
-  async confirmDeleteProject(project: Project) {
-    const confirmed = confirm(`Vill du verkligen ta bort projektet "${project.name}"?`);
-    if (!confirmed) return;
+  // ✅ Öppna modal
+  openDeleteModal(project: Project) {
+    this.projectToDelete = project;
+    this.showModal.set(true);
+  }
+
+  // ✅ Bekräfta radering
+  async confirmDelete() {
+    const project = this.projectToDelete;
+    if (!project) return;
 
     const tasksToDelete = this.tasks().filter((t) => t.project_id === project.id);
     for (const task of tasksToDelete) {
@@ -122,5 +134,12 @@ export class ProjectsPageComponent {
     }
 
     await this.projectService.deleteProject(project.id);
+    this.closeModal();
+  }
+
+  // ✅ Avbryt modal
+  closeModal() {
+    this.projectToDelete = null;
+    this.showModal.set(false);
   }
 }

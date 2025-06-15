@@ -39,7 +39,7 @@
         ⬅️ Till startsidan
       </button>
       <button
-        (click)="confirmDeleteProject()"
+        (click)="openDeleteProjectModal()"
         class="mb-4 w-[170px] text-red-600 border border-red-600 px-4 py-2 rounded hover:bg-red-50"
       >
         🗑️ Ta bort projekt
@@ -129,7 +129,7 @@
             ✏️
           </button>
           <button
-            (click)="deleteTask(task.id)"
+            (click)="openDeleteTaskModal(task.id)"
             class="text-red-600 hover:text-red-800 text-sm"
             title="Ta bort uppgift"
           >
@@ -148,3 +148,12 @@
 <ng-template #notFound>
   <p class="text-red-500 text-center mt-10">Projektet kunde inte hittas.</p>
 </ng-template>
+
+<!-- ✅ Delete Modal -->
+<app-delete-modal
+  *ngIf="showModal()"
+  [title]="modalTitle()"
+  [message]="modalMessage()"
+  (cancel)="closeModal()"
+  (confirm)="confirmDelete()"
+></app-delete-modal>

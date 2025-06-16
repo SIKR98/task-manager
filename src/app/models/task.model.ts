@@ -8,6 +8,6 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   project_id: number;
-  deadline: string;       // ✅ Lägg till denna rad
+  deadline: string;
   created_at: string;
 }

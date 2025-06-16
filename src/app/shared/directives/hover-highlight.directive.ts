@@ -5,7 +5,7 @@ import { Directive, ElementRef, HostListener, Input } from '@angular/core';
   standalone: true,
 })
 export class HoverHighlightDirective {
-  @Input('appHoverHighlight') highlightColor = '#f0f0f0'; // defaultfärg
+  @Input('appHoverHighlight') highlightColor = '#f0f0f0';
 
   private originalColor: string = '';
 

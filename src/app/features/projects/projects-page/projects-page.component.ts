@@ -38,8 +38,8 @@ export class ProjectsPageComponent {
   searchTerm = signal('');
   editingProject: Project | null = null;
 
-  showModal = signal(false); // ✅ kontroll för att visa modal
-  projectToDelete: Project | null = null; // ✅ sparar vilket projekt som ska tas bort
+  showModal = signal(false); // kontroll för att visa modal
+  projectToDelete: Project | null = null; // sparar vilket projekt som ska tas bort
 
   filteredProjects: Signal<ExtendedProject[]>;
 
@@ -117,13 +117,13 @@ export class ProjectsPageComponent {
     this.editingProject = { ...project };
   }
 
-  // ✅ Öppna modal
+  // Öppna modal
   openDeleteModal(project: Project) {
     this.projectToDelete = project;
     this.showModal.set(true);
   }
 
-  // ✅ Bekräfta radering
+  // Bekräfta radering
   async confirmDelete() {
     const project = this.projectToDelete;
     if (!project) return;
@@ -137,7 +137,7 @@ export class ProjectsPageComponent {
     this.closeModal();
   }
 
-  // ✅ Avbryt modal
+  // Avbryt modal
   closeModal() {
     this.projectToDelete = null;
     this.showModal.set(false);
